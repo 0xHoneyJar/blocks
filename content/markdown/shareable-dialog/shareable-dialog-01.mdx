@@ -1,0 +1,178 @@
+````tsx
+"use client";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+
+interface ShareableDialog01Props {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  imageUrl: string;
+}
+
+export default function ShareableDialog01({
+  open,
+  onOpenChange,
+  imageUrl,
+}: ShareableDialog01Props) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [isCopyLoading, setIsCopyLoading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
+
+  useEffect(() => {
+    setIsImageLoading(true);
+  }, [open, imageUrl]);
+
+  useEffect(() => {
+    if (!open) {
+      const timeout = setTimeout(() => {
+        document.body.style.pointerEvents = "";
+      }, 300);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [open]);
+
+  const handleCopyToClipboard = async () => {
+    setIsCopyLoading(true);
+
+    try {
+      const response = await fetch(imageUrl);
+      const blob = await response.blob();
+
+      // Create a new blob with explicit image type
+      const imageBlob = new Blob([blob], { type: "image/png" });
+
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "image/png": imageBlob,
+        }),
+      ]);
+
+      setIsCopied(true);
+      toast.success("Image copied to clipboard!", {
+        description: "You can now paste it directly into X",
+      });
+    } catch (error) {
+      console.error("Failed to copy:", error);
+      toast.error("Failed to copy image", {
+        description: "Please try downloading and uploading the image manually",
+      });
+    } finally {
+      setIsCopyLoading(false);
+    }
+  };
+
+  const handleShare = async () => {
+    setIsLoading(true);
+    try {
+      const tweetText = `Check out my generated image!\n\n`;
+
+      const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        tweetText
+      )}`;
+      window.open(tweetUrl, "_blank");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error sharing:", error);
+      toast.error("Failed to share. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="text-2xl font-semibold">
+            Share your Image
+          </DialogTitle>
+          <DialogDescription>
+            Copy your image and share it on X.com
+          </DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative aspect-[1200/1200] w-full overflow-hidden rounded-lg border bg-background">
+            {isImageLoading && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            )}
+            {imageUrl && (
+              <Image
+                src={imageUrl}
+                alt="Share preview"
+                fill
+                className={cn(
+                  "object-cover transition-opacity duration-300",
+                  isImageLoading ? "opacity-0" : "opacity-100"
+                )}
+                unoptimized
+                onLoadingComplete={() => setIsImageLoading(false)}
+              />
+            )}
+          </div>
+          <div className="flex w-full gap-2">
+            <Button
+              variant="secondary"
+              className="flex-1"
+              onClick={handleCopyToClipboard}
+              disabled={isCopyLoading}
+            >
+              {isCopyLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Copying...
+                </>
+              ) : isCopied ? (
+                "Copied!"
+              ) : (
+                "Copy to Clipboard"
+              )}
+            </Button>
+            <Button
+              className="flex-1"
+              variant="outline"
+              onClick={handleShare}
+              disabled={isLoading || !isCopied}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sharing...
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Image
+                      src="/twitter.svg"
+                      alt="Share on X"
+                      width={16}
+                      height={16}
+                      className="opacity-70"
+                    />
+                    Post
+                  </div>
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+````

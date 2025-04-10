@@ -1,7 +1,4 @@
 import { FileUploadThumbnail } from "@/components/thumbnails/file-upload";
-import { FormLayoutThumbnail } from "@/components/thumbnails/form-layout";
-import { LoginThumbnail } from "@/components/thumbnails/login";
-import { StatsThumbnail } from "@/components/thumbnails/stats";
 
 import { blocksMetadata } from "./blocks-metadata";
 import {
@@ -38,33 +35,9 @@ const initializeAndUpdateCategories = (): BlocksCategoryMetadata[] => {
 
 const preblocksCategoriesMetadata: Omit<BlocksCategoryMetadata, "count">[] = [
   {
-    id: categoryIds.FileUpload,
-    name: "File Upload",
+    id: categoryIds.ShareableDialog,
+    name: "Shareable Dialog",
     thumbnail: FileUploadThumbnail,
-    hasCharts: false,
-  },
-  {
-    id: categoryIds.FormLayout,
-    name: "Form Layout",
-    thumbnail: FormLayoutThumbnail,
-    hasCharts: false,
-  },
-  {
-    id: categoryIds.GridList,
-    name: "Grid List",
-    thumbnail: StatsThumbnail,
-    hasCharts: false,
-  },
-  {
-    id: categoryIds.Login,
-    name: "Login & Signup",
-    thumbnail: LoginThumbnail,
-    hasCharts: false,
-  },
-  {
-    id: categoryIds.Stats,
-    name: "Stats",
-    thumbnail: StatsThumbnail,
     hasCharts: false,
   },
 ];
